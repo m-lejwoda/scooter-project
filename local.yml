@@ -4,18 +4,25 @@ services:
     ports: 
       - 8080:8080
     environment:
+      - CGO_ENABLED=0
       - POSTGRES_NAME=Test
       - POSTGRES_DB=test
       - POSTGRES_PORT=5000
       - POSTGRES_USER=Test
       - POSTGRES_PASSWORD=password
+    volumes:
+      - .:/app
   db:
     image: postgis/postgis:18-3.6
     restart: always
-    volumes: postgres_data:/var/lib/postgresql
+    volumes:
+      - postgres_data:/var/lib/postgresql
     environment:
       - POSTGRES_NAME=Test
       - POSTGRES_DB=test
       - POSTGRES_PORT=5000
       - POSTGRES_USER=Test
       - POSTGRES_PASSWORD=password
+
+volumes:
+  postgres_data:
