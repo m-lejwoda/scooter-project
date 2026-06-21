@@ -12,6 +12,7 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - .:/app
+    working_dir: /app/scooter-prj
   db:
     image: postgis/postgis:18-3.6
     restart: always
