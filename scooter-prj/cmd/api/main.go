@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	urlExample := "postgres://Test:password@db:5432/test"
+	urlExample := "postgres://admin:admin@dbdb:5432/scooter_db"
 	fmt.Println("Test")
 	dbpool, err := pgxpool.New(context.Background(), urlExample)
 	if err != nil {

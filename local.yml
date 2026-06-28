@@ -5,11 +5,10 @@ services:
       - 8080:8080
     environment:
       - CGO_ENABLED=0
-      - POSTGRES_NAME=Test
-      - POSTGRES_DB=test
+      - POSTGRES_DB=scooter_db
       - POSTGRES_PORT=5432
-      - POSTGRES_USER=Test
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
     volumes:
       - .:/app
     working_dir: /app/scooter-prj
@@ -23,11 +22,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     environment:
-      - POSTGRES_NAME=Test
-      - POSTGRES_DB=test
+      - POSTGRES_DB=scooter_db
       - POSTGRES_PORT=5432
-      - POSTGRES_USER=Test
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
