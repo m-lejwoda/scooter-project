@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -14,25 +13,11 @@ import (
 
 func main() {
 	err := godotenv.Load("../.env")
-	postgresDB := os.Getenv("POSTGRES_DB")
-	fmt.Println("--- SPRAWDZAMY ZMIENNE W PAMIĘCI ---")
-	for _, env := range os.Environ() {
-		// Sprawdzamy, czy w pamięci jest cokolwiek zawierającego "DB" lub "POSTGRES"
-		if strings.Contains(env, "DB") || strings.Contains(env, "POSTGRES") {
-			fmt.Println(env)
-		}
-	}
-	fmt.Println("------------------------------------")
 	if err != nil {
-		fmt.Println("❌ BŁĄD: Nie mogę załadować pliku .env! Powód:", err)
-	} else {
-		fmt.Println("✅ SUKCES: Plik .env załadowany poprawnie!")
+		fmt.Println(err)
 	}
-	fmt.Println("sadasdsa")
-	fmt.Println(postgresDB)
-	urlExample := "postgres://admin:admin@dbdb:5432/scooter_db"
-	fmt.Println("Test")
-	dbpool, err := pgxpool.New(context.Background(), urlExample)
+	fmt.Println(os.Getenv("DATABASE_URL"))
+	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Cant connect to database")
 	}

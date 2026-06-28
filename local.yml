@@ -4,12 +4,6 @@ services:
     ports: 
       - 8080:8080
     env_file: ".env"
-      #environment:
-    #  - CGO_ENABLED=0
-    #  - POSTGRES_DB=scooter_db
-    #  - POSTGRES_PORT=5432
-    #  - POSTGRES_USER=admin
-    #  - POSTGRES_PASSWORD=admin
     volumes:
       - .:/app
     working_dir: /app/scooter-prj
@@ -24,13 +18,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     env_file: ".env"
-    #environment:
-    #  - POSTGRES_DB=scooter_db
-    #  - POSTGRES_PORT=5432
-    #  - POSTGRES_USER=admin
-    #  - POSTGRES_PASSWORD=admin
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d scooter_db"]
       interval: 10s
       retries: 5
       start_period: 5s
