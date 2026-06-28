@@ -13,6 +13,7 @@ services:
     volumes:
       - .:/app
     working_dir: /app/scooter-prj
+    command: air --build.cmd "go build -o ./tmp/main ./cmd/api/main.go" --build.bin "./tmp/main"
     depends_on:
       db:
         condition: service_healthy
