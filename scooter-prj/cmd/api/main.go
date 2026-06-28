@@ -1,38 +1,31 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
+	"scooter-prj/internal/config"
+	"scooter-prj/internal/database"
 )
 
 func main() {
-	err := godotenv.Load("../.env")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Configuration error")
+	}
+	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(os.Getenv("DATABASE_URL"))
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatalf("Cant connect to database")
-	}
-	defer dbpool.Close()
-	var greeting string
-	err = dbpool.QueryRow(context.Background(), "select 'Hello world!'").Scan(&greeting)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-	}
-	fmt.Println(greeting)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Go lang server works")
-	})
 
-	fmt.Println("test")
+	defer db.Close()
+	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("pong"))
+		if err != nil {
+			fmt.Println(err)
+		}
+	})
 
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
