@@ -27,5 +27,7 @@ func (u *UserStorage) GetByID(ctx context.Context, id string) (*User, error) {
 }
 
 func (u *UserStorage) Save(ctx context.Context, user *User) error {
+	query := `INSERT INTO users (username, lastname, password, created_at)
+										VALUES (,$1, $2, $3, $4) RETURNING id, username, lastname, created_at;`
 	return nil
 }
