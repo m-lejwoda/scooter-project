@@ -7,6 +7,7 @@ import (
 
 	"scooter-prj/internal/config"
 	"scooter-prj/internal/database"
+	"scooter-prj/internal/user"
 )
 
 func main() {
@@ -26,6 +27,14 @@ func main() {
 			fmt.Println(err)
 		}
 	})
+
+	storage := user.NewUserStorage(db)
+	userService := user.NewUserService(storage)
+	userHandler := user.NewUserHandler(userService)
+
+	mux := http.NewServeMux()
+
+	userHandler.RegisterRoutes(mux)
 
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
