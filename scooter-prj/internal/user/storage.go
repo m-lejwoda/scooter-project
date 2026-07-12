@@ -25,3 +25,7 @@ func (u *UserStorage) GetByID(ctx context.Context, id string) (*User, error) {
 	}
 	return &user, nil
 }
+
+func (u *UserStorage) Save(ctx context.Context, user *User) error {
+	return nil
+}
