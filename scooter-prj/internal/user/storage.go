@@ -17,7 +17,7 @@ func NewUserStorage(db *database.DB) *UserStorage {
 }
 
 func (u *UserStorage) GetByID(ctx context.Context, id string) (*User, error) {
-	query := `SELECT id, username, lastname FROM users WHERE id = $1:`
+	query := `SELECT id, username, lastname FROM users WHERE id = $1`
 	var user User
 	err := u.db.Pool.QueryRow(ctx, query, id).Scan(&user.ID, &user.Username, &user.Lastname)
 	if err != nil {
@@ -26,15 +26,32 @@ func (u *UserStorage) GetByID(ctx context.Context, id string) (*User, error) {
 	return &user, nil
 }
 
-func (u *UserStorage) Save(ctx context.Context, user *User) error {
+func (u *UserStorage) GetByUsername(ctx context.Context, username string) (*User, error) {
+	query := `SELECT id, username, lastname, password, created_at FROM users WHERE username = $1`
+	var user User
+	err := u.db.Pool.QueryRow(ctx, query, username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Lastname,
+		&user.Password,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		return &user, err
+	}
+	return &user, nil
+}
+
+func (u *UserStorage) Save(ctx context.Context, user *UserRegister) (*User, error) {
+	var createdUser User
 	query := `
 										INSERT INTO users (username, lastname, password, created_at)
 										VALUES ($1, $2, $3, NOW())
 										RETURNING id, username, lastname, created_at;`
 	row := u.db.Pool.QueryRow(ctx, query, &user.Username, &user.Lastname, &user.Password)
-	err := row.Scan(&user.ID, &user.Username, &user.Lastname, &user.CreatedAt)
+	err := row.Scan(&createdUser.ID, &createdUser.Username, &createdUser.Lastname, &createdUser.CreatedAt)
 	if err != nil {
-		return err
+		return &createdUser, err
 	}
-	return nil
+	return &createdUser, nil
 }

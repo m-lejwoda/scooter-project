@@ -36,12 +36,14 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Registration")
 	u, err := helper.ReadJSON[UserRegister](w, r)
 	if err != nil {
 		return
 	}
-	err = h.service.Register(r.Context(), u)
+	user, err := h.service.Register(r.Context(), u)
 	if err != nil {
 		helper.WriteError(w, http.StatusInternalServerError, "Error Server")
 	}
+	fmt.Println(user)
 }
