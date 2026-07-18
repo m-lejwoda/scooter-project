@@ -9,13 +9,16 @@ import (
 
 type Config struct {
 	DatabaseURL string
+	RedisURL    string
 }
 
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 	dbURL := os.Getenv("DATABASE_URL")
+	redisURL := os.Getenv("REDIS_URL")
 
 	return &Config{
 		DatabaseURL: dbURL,
+		RedisURL:    redisURL,
 	}, nil
 }
