@@ -27,7 +27,14 @@ func (u *UserStorage) GetByID(ctx context.Context, id string) (*User, error) {
 }
 
 func (u *UserStorage) Save(ctx context.Context, user *User) error {
-	query := `INSERT INTO users (username, lastname, password, created_at)
-										VALUES (,$1, $2, $3, $4) RETURNING id, username, lastname, created_at;`
+	query := `
+										INSERT INTO users (username, lastname, password, created_at)
+										VALUES ($1, $2, $3, NOW())
+										RETURNING id, username, lastname, created_at;`
+	row := u.db.Pool.QueryRow(ctx, query, &user.Username, &user.Lastname, &user.Password)
+	err := row.Scan(&user.ID, &user.Username, &user.Lastname, &user.CreatedAt)
+	if err != nil {
+		return err
+	}
 	return nil
 }

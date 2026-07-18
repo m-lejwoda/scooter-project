@@ -13,10 +13,18 @@ func NewUserService(repo UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 
-func (u *UserService) Login(ctx context.Context, user User) error {
+func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse, error) {
+	respUser, err := u.repo.GetByUsername(ctx, &user)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return respUser, nil
+}
+
+func (u *UserService) Register(ctx context.Context, user UserRegister) error {
 	err := u.repo.Save(ctx, &user)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return nil
+	return err
 }

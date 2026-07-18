@@ -7,5 +7,6 @@ import (
 
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*User, error)
-	Save(ctx context.Context, user *User) error
+	GetByUsername(ctx context.Context, user *UserLogin) (*UserResponse, error)
+	Save(ctx context.Context, user *UserRegister) error
 }
