@@ -27,6 +27,8 @@ github.com/go-openapi/swag/typeutils v0.27.0 h1:aCf4MSGo8NLwZP8Q6t32DWLJSvl/WwNq
 github.com/go-openapi/swag/typeutils v0.27.0/go.mod h1:Srm0xFNRZ1Y+vCxJclo5qzx8aj+1pAKda/YfFPrG0dQ=
 github.com/go-openapi/swag/yamlutils v0.27.0 h1:bQ6eAMil5X9tdcf7dMn4t15alzG6jddnrKPuKa/zxKM=
 github.com/go-openapi/swag/yamlutils v0.27.0/go.mod h1:yRfIo7qqVkmJRQjX8exjA3AfcI8rH1KDNPsTparoCv4=
+github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63YCY=
+github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
