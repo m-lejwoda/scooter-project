@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"scooter-prj/internal/database"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserStorage struct {
@@ -48,7 +50,14 @@ func (u *UserStorage) Save(ctx context.Context, user *UserRegister) (*User, erro
 										INSERT INTO users (username, lastname, password, created_at)
 										VALUES ($1, $2, $3, NOW())
 										RETURNING id, username, lastname, created_at;`
-	row := u.db.Pool.QueryRow(ctx, query, &user.Username, &user.Lastname, &user.Password)
+	// TODO
+	// add Hash password
+	//&user.Password
+	generatedPasswordBytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	generatedPassword := string(generatedPasswordBytes)
+	fmt.Println(generatedPassword)
+
+	row := u.db.Pool.QueryRow(ctx, query, &user.Username, &user.Lastname, generatedPassword)
 	err := row.Scan(&createdUser.ID, &createdUser.Username, &createdUser.Lastname, &createdUser.CreatedAt)
 	if err != nil {
 		return &createdUser, err

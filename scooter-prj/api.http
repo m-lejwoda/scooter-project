@@ -8,7 +8,15 @@ POST http://localhost:8080/user/register
 Content-Type: application/json
 
 {
-  "username": "john",
+  "username": "john1",
   "lastname": "doe",
   "password": "secret-password"
+}
+
+POST http://localhost:8080/user/login
+Content-Type: application/json
+
+{
+  "username": "john1"
+  "lastname": "doe"
 }
