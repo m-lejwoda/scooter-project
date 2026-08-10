@@ -44,7 +44,8 @@ func main() {
 	})
 
 	storage := user.NewUserStorage(db)
-	userService := user.NewUserService(storage)
+	tokenStorage := user.NewUserTokenStorage(rdb)
+	userService := user.NewUserService(storage, tokenStorage)
 	userHandler := user.NewUserHandler(userService)
 
 	mux := http.NewServeMux()

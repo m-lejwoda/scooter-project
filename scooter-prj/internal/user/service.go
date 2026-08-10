@@ -44,7 +44,9 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 	signedRefreshToken, _ = refreshToken.SignedString(key)
 	fmt.Println(signedRefreshToken)
 	fmt.Println(signedAccessToken)
-
+	//TODO Save signed token in redis
+	
+	//TODO Return JWT_TOKEN 
 	respUser := &UserResponse{
 		ID:       dbUser.ID,
 		Username: dbUser.Username,
