@@ -10,3 +10,11 @@ type UserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*User, error)
 	Save(ctx context.Context, user *UserRegister) (*User, error)
 }
+
+type TokenRepository interface {
+	GetAccessToken(ctx context.Context, name string) string
+	GetRefreshToken(ctx context.Context, name string) string
+	DeleteAccessToken(ctx context.Context, name string)
+	DeleteRefreshToken(ctx context.Context, name string)
+	CreateAccessTokenBasedOnRefresh(ctx context.Context, name string, accessToken string, refreshToken string)
+}

@@ -4,21 +4,23 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserService struct {
-	repo UserRepository
+	userRepo  UserRepository
+	tokenRepo TokenRepository
 }
 
-func NewUserService(repo UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(userRepo UserRepository, tokenRepo TokenRepository) *UserService {
+	return &UserService{userRepo: userRepo, tokenRepo: tokenRepo}
 }
 
 func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse, error) {
-	dbUser, err := u.repo.GetByUsername(ctx, user.Username)
+	dbUser, err := u.userRepo.GetByUsername(ctx, user.Username)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -44,9 +46,11 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 	signedRefreshToken, _ = refreshToken.SignedString(key)
 	fmt.Println(signedRefreshToken)
 	fmt.Println(signedAccessToken)
-	//TODO Save signed token in redis
-	
-	//TODO Return JWT_TOKEN 
+	name := dbUser.Username + strconv.Itoa(dbUser.ID)
+	u.tokenRepo.CreateAccessTokenBasedOnRefresh(ctx, name, signedAccessToken, signedRefreshToken)
+	// TODO Save signed token in redis
+
+	// TODO Return JWT_TOKEN
 	respUser := &UserResponse{
 		ID:       dbUser.ID,
 		Username: dbUser.Username,
@@ -55,7 +59,7 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 }
 
 func (u *UserService) Register(ctx context.Context, user UserRegister) (*UserResponse, error) {
-	createdUser, err := u.repo.Save(ctx, &user)
+	createdUser, err := u.userRepo.Save(ctx, &user)
 	if err != nil {
 		fmt.Println(err)
 	}
