@@ -48,7 +48,7 @@ func (t *TokenStorage) DeleteRefreshToken(ctx context.Context, name string) {
 	t.client.Del(ctx, key)
 }
 
-func (t *TokenStorage) CreateAccessTokenBasedOnRefresh(ctx context.Context, name string, accessToken string, refreshToken string) {
+func (t *TokenStorage) CreateTokens(ctx context.Context, name string, accessToken string, refreshToken string) {
 	accessStr := "access_token_"
 	refreshStr := "refresh_token_"
 	accessKey := accessStr + name

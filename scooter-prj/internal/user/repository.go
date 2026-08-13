@@ -16,5 +16,5 @@ type TokenRepository interface {
 	GetRefreshToken(ctx context.Context, name string) string
 	DeleteAccessToken(ctx context.Context, name string)
 	DeleteRefreshToken(ctx context.Context, name string)
-	CreateAccessTokenBasedOnRefresh(ctx context.Context, name string, accessToken string, refreshToken string)
+	CreateTokens(ctx context.Context, name string, accessToken string, refreshToken string)
 }

@@ -31,6 +31,7 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 		signedRefreshToken string
 		signedAccessToken  string
 	)
+
 	key = []byte(os.Getenv("JWT_SECRET_KEY"))
 	accessToken = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  dbUser.ID,
@@ -44,13 +45,14 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 		"exp":      time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 	signedRefreshToken, _ = refreshToken.SignedString(key)
-	fmt.Println(signedRefreshToken)
-	fmt.Println(signedAccessToken)
-	name := dbUser.Username + strconv.Itoa(dbUser.ID)
-	u.tokenRepo.CreateAccessTokenBasedOnRefresh(ctx, name, signedAccessToken, signedRefreshToken)
-	// TODO Save signed token in redis
+	// remove old tokens
 
-	// TODO Return JWT_TOKEN
+	name := dbUser.Username + strconv.Itoa(dbUser.ID)
+	// Delete old tokens
+	u.tokenRepo.DeleteAccessToken(ctx, name)
+	u.tokenRepo.DeleteRefreshToken(ctx, name)
+	// CreateFreshTokens
+	u.tokenRepo.CreateTokens(ctx, name, signedAccessToken, signedRefreshToken)
 	respUser := &UserResponse{
 		ID:       dbUser.ID,
 		Username: dbUser.Username,
@@ -68,4 +70,25 @@ func (u *UserService) Register(ctx context.Context, user UserRegister) (*UserRes
 		Username: createdUser.Username,
 	}
 	return respUser, err
+}
+
+func (u *UserService) RefreshToken(ctx context.Context, token string) {
+	u.tokenRepo.GetRefreshToken(ctx, token)
+}
+
+func VerifyToken(tokenString string) (jwt.MapClaims, error) {
+	key := []byte(os.Getenv("JWT_SECRET_KEY"))
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpeceted algorithm signing", token.Header["alg"])
+		}
+		return key, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, fmt.Errorf("Wrong token")
 }
