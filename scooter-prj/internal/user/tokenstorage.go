@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -48,11 +47,21 @@ func (t *TokenStorage) DeleteRefreshToken(ctx context.Context, name string) {
 	t.client.Del(ctx, key)
 }
 
-func (t *TokenStorage) CreateTokens(ctx context.Context, name string, accessToken string, refreshToken string) {
+func (t *TokenStorage) CreateTokens(ctx context.Context, name string, tokenResponse TokenResponse, tokensTTL TokensTTL) (TokenResponse, error) {
 	accessStr := "access_token_"
 	refreshStr := "refresh_token_"
 	accessKey := accessStr + name
 	refreshKey := refreshStr + name
-	t.client.Set(ctx, accessKey, accessToken, time.Hour*24)
-	t.client.Set(ctx, refreshKey, refreshToken, time.Hour*24*30)
+	if err := t.client.Set(ctx, accessKey, tokenResponse.AccessToken, tokensTTL.AccessTTL).Err(); err != nil {
+		return TokenResponse{}, fmt.Errorf("failed to save access token: %w", err)
+	}
+	if err := t.client.Set(ctx, refreshKey, tokenResponse.RefreshToken, tokensTTL.RefreshTTL).Err(); err != nil {
+		return TokenResponse{}, fmt.Errorf("failed to save refresh token: %w", err)
+	}
+	return TokenResponse{
+		AccessToken:            tokenResponse.AccessToken,
+		RefreshToken:           tokenResponse.RefreshToken,
+		AccessTokenExpiration:  tokenResponse.AccessTokenExpiration,
+		RefreshTokenExpiration: tokenResponse.RefreshTokenExpiration,
+	}, nil
 }

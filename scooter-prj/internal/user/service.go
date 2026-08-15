@@ -24,38 +24,30 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 	if err != nil {
 		fmt.Println(err)
 	}
-	var (
-		key                []byte
-		refreshToken       *jwt.Token
-		accessToken        *jwt.Token
-		signedRefreshToken string
-		signedAccessToken  string
-	)
-
-	key = []byte(os.Getenv("JWT_SECRET_KEY"))
-	accessToken = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  dbUser.ID,
-		"username": dbUser.Username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-	})
-	signedAccessToken, _ = accessToken.SignedString(key)
-	refreshToken = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  dbUser.ID,
-		"username": dbUser.Username,
-		"exp":      time.Now().Add(time.Hour * 24 * 30).Unix(),
-	})
-	signedRefreshToken, _ = refreshToken.SignedString(key)
-	// remove old tokens
-
+	accessTTL := time.Hour * 24
+	refreshTTL := time.Hour * 24 * 30
+	tokensTTL := TokensTTL{
+		AccessTTL:  accessTTL,
+		RefreshTTL: refreshTTL,
+	}
+	j := NewJWTManager(tokensTTL)
+	generatedTokens := j.GenerateTokens(strconv.Itoa(dbUser.ID), dbUser.Username)
 	name := dbUser.Username + strconv.Itoa(dbUser.ID)
 	// Delete old tokens
 	u.tokenRepo.DeleteAccessToken(ctx, name)
 	u.tokenRepo.DeleteRefreshToken(ctx, name)
 	// CreateFreshTokens
-	u.tokenRepo.CreateTokens(ctx, name, signedAccessToken, signedRefreshToken)
+	token, err := u.tokenRepo.CreateTokens(ctx, name, generatedTokens, tokensTTL)
+	if err != nil {
+		fmt.Println(err)
+	}
 	respUser := &UserResponse{
-		ID:       dbUser.ID,
-		Username: dbUser.Username,
+		ID:                     dbUser.ID,
+		Username:               dbUser.Username,
+		AccessToken:            token.AccessToken,
+		RefreshToken:           token.RefreshToken,
+		AccessTokenExpiration:  token.AccessTokenExpiration,
+		RefreshTokenExpiration: token.RefreshTokenExpiration,
 	}
 	return respUser, nil
 }
