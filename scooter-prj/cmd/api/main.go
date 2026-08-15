@@ -42,10 +42,13 @@ func main() {
 			fmt.Println(err)
 		}
 	})
-
+	jwtManager := user.NewJWTManager(user.TokensTTL{
+		AccessTTL:  time.Hour * 24,
+		RefreshTTL: time.Hour * 24 * 30,
+	})
 	storage := user.NewUserStorage(db)
 	tokenStorage := user.NewUserTokenStorage(rdb)
-	userService := user.NewUserService(storage, tokenStorage)
+	userService := user.NewUserService(storage, tokenStorage, jwtManager)
 	userHandler := user.NewUserHandler(userService)
 
 	mux := http.NewServeMux()

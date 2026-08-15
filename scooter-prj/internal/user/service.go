@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserService struct {
-	userRepo  UserRepository
-	tokenRepo TokenRepository
+	userRepo   UserRepository
+	tokenRepo  TokenRepository
+	jwtManager *JWTManager
 }
 
-func NewUserService(userRepo UserRepository, tokenRepo TokenRepository) *UserService {
-	return &UserService{userRepo: userRepo, tokenRepo: tokenRepo}
+func NewUserService(userRepo UserRepository, tokenRepo TokenRepository, jwtManager *JWTManager) *UserService {
+	return &UserService{userRepo: userRepo, tokenRepo: tokenRepo, jwtManager: jwtManager}
 }
 
 func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse, error) {
@@ -24,32 +24,8 @@ func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse,
 	if err != nil {
 		fmt.Println(err)
 	}
-	accessTTL := time.Hour * 24
-	refreshTTL := time.Hour * 24 * 30
-	tokensTTL := TokensTTL{
-		AccessTTL:  accessTTL,
-		RefreshTTL: refreshTTL,
-	}
-	j := NewJWTManager(tokensTTL)
-	generatedTokens := j.GenerateTokens(strconv.Itoa(dbUser.ID), dbUser.Username)
-	name := dbUser.Username + strconv.Itoa(dbUser.ID)
-	// Delete old tokens
-	u.tokenRepo.DeleteAccessToken(ctx, name)
-	u.tokenRepo.DeleteRefreshToken(ctx, name)
-	// CreateFreshTokens
-	token, err := u.tokenRepo.CreateTokens(ctx, name, generatedTokens, tokensTTL)
-	if err != nil {
-		fmt.Println(err)
-	}
-	respUser := &UserResponse{
-		ID:                     dbUser.ID,
-		Username:               dbUser.Username,
-		AccessToken:            token.AccessToken,
-		RefreshToken:           token.RefreshToken,
-		AccessTokenExpiration:  token.AccessTokenExpiration,
-		RefreshTokenExpiration: token.RefreshTokenExpiration,
-	}
-	return respUser, nil
+	respUser, err := u.generateUserResponse(ctx, dbUser.ID, dbUser.Username)
+	return respUser, err
 }
 
 func (u *UserService) Register(ctx context.Context, user UserRegister) (*UserResponse, error) {
@@ -57,15 +33,35 @@ func (u *UserService) Register(ctx context.Context, user UserRegister) (*UserRes
 	if err != nil {
 		fmt.Println(err)
 	}
-	respUser := &UserResponse{
-		ID:       createdUser.ID,
-		Username: createdUser.Username,
-	}
+	respUser, err := u.generateUserResponse(ctx, createdUser.ID, createdUser.Username)
 	return respUser, err
 }
 
 func (u *UserService) RefreshToken(ctx context.Context, token string) {
 	u.tokenRepo.GetRefreshToken(ctx, token)
+}
+
+func (u *UserService) generateUserResponse(ctx context.Context, userID int, username string) (*UserResponse, error) {
+	userIDStr := strconv.Itoa(userID)
+
+	generatedTokens := u.jwtManager.GenerateTokens(userIDStr, username)
+
+	name := username + userIDStr
+	u.tokenRepo.DeleteAccessToken(ctx, name)
+	u.tokenRepo.DeleteRefreshToken(ctx, name)
+	token, err := u.tokenRepo.CreateTokens(ctx, name, generatedTokens, u.jwtManager.tokensTTL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to store tokens: %w", err)
+	}
+
+	return &UserResponse{
+		ID:                     userID,
+		Username:               username,
+		AccessToken:            token.AccessToken,
+		RefreshToken:           token.RefreshToken,
+		AccessTokenExpiration:  token.AccessTokenExpiration,
+		RefreshTokenExpiration: token.RefreshTokenExpiration,
+	}, nil
 }
 
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
