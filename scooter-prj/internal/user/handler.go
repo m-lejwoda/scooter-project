@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"scooter-prj/internal/helper"
 )
@@ -65,6 +66,13 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	username, _ := claims["username"].(string)
 
 	name := username + userID
-	h.service.RefreshToken(r.Context(), name)
-	// TODO FINISH THIS
+	uID, err := strconv.Atoi(userID)
+	if err != nil {
+		fmt.Println(err)
+	}
+	userResp, err := h.service.RefreshToken(r.Context(), name, uID, username)
+	if err != nil {
+		helper.WriteError(w, http.StatusInternalServerError, "Error Server")
+	}
+	helper.WriteJSON(w, http.StatusOK, &userResp)
 }

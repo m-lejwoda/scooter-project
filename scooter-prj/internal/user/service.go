@@ -37,8 +37,9 @@ func (u *UserService) Register(ctx context.Context, user UserRegister) (*UserRes
 	return respUser, err
 }
 
-func (u *UserService) RefreshToken(ctx context.Context, token string) {
-	u.tokenRepo.GetRefreshToken(ctx, token)
+func (u *UserService) RefreshToken(ctx context.Context, token string, userID int, username string) (*UserResponse, error) {
+	respUser, err := u.generateUserResponse(ctx, userID, username)
+	return respUser, err
 }
 
 func (u *UserService) generateUserResponse(ctx context.Context, userID int, username string) (*UserResponse, error) {
