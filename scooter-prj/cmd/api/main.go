@@ -11,6 +11,7 @@ import (
 	"scooter-prj/internal/database"
 	"scooter-prj/internal/user"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -52,6 +53,7 @@ func main() {
 	userHandler := user.NewUserHandler(userService)
 
 	mux := http.NewServeMux()
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	userHandler.RegisterRoutes(mux)
 
