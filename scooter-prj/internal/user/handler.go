@@ -21,7 +21,16 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /user/login", h.Login)
 	mux.HandleFunc("POST /user/register", h.Register)
 	mux.HandleFunc("POST /user/refresh_token", h.RefreshToken)
+	mux.HandleFunc("GET /user/test", h.UserTest)
 	//mux.HandleFunc("POST /user/register", h.RegisterHTTP)
+}
+
+func (h *UserHandler) UserTest(w http.ResponseWriter, r *http.Request) {
+	dict := map[string]string{
+		"user":  "michal",
+		"user1": "robert",
+	}
+	helper.WriteJSON(w, 200, dict)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -76,3 +85,9 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 	helper.WriteJSON(w, http.StatusOK, &userResp)
 }
+
+//TODO Reset Password
+//
+//TODO Change Email with email send
+//
+//TODO read more features from prometheus
