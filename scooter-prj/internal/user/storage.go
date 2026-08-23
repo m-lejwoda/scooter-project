@@ -50,9 +50,6 @@ func (u *UserStorage) Save(ctx context.Context, user *UserRegister) (*User, erro
 										INSERT INTO users (username, lastname, password, created_at)
 										VALUES ($1, $2, $3, NOW())
 										RETURNING id, username, lastname, created_at;`
-	// TODO
-	// add Hash password
-	//&user.Password
 	generatedPasswordBytes, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	generatedPassword := string(generatedPasswordBytes)
 	fmt.Println(generatedPassword)
