@@ -23,6 +23,8 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /user/register", h.Register)
 	mux.HandleFunc("POST /user/refresh_token", h.RefreshToken)
 	mux.HandleFunc("GET /user/test", h.UserTest)
+	mux.HandleFunc("POST /user/request_reset_password", h.RequestPasswordReset)
+	mux.HandleFunc("POST /user/reset_password/{token}", h.ResetPassword)
 	//mux.HandleFunc("POST /user/register", h.RegisterHTTP)
 }
 
@@ -87,8 +89,8 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	helper.WriteJSON(w, http.StatusOK, &userResp)
 }
 
-func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Reset Password")
+func (h *UserHandler) RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("RequestPasswordReset")
 	u, _ := helper.ReadJSON[UserEmail](w, r)
 	user, err := h.service.userRepo.GetByEmail(r.Context(), u.Email)
 	if err != nil {
@@ -104,6 +106,15 @@ func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		helper.WriteError(w, http.StatusBadRequest, "Something went wrong")
 	}
 	helper.WriteJSON(w, http.StatusOK, &resetTokenResponse)
+}
+
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Reset Password")
+	token := r.PathValue("token")
+	if token == "" {
+		helper.WriteError(w, http.StatusBadRequest, "No token")
+		// TODO DO REST
+	}
 }
 
 //TODO Reset Password
