@@ -1,1 +1,6 @@
 # scooter-project
+
+Todo
+Reset password
+email change by sending email
+read more features from prometheus

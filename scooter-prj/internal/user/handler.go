@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"scooter-prj/internal/helper"
+	"scooter-prj/internal/security"
 )
 
 type UserHandler struct {
@@ -84,6 +85,25 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		helper.WriteError(w, http.StatusInternalServerError, "Error Server")
 	}
 	helper.WriteJSON(w, http.StatusOK, &userResp)
+}
+
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Reset Password")
+	u, _ := helper.ReadJSON[UserEmail](w, r)
+	user, err := h.service.userRepo.GetByEmail(r.Context(), u.Email)
+	if err != nil {
+		fmt.Println("Error")
+		if err == ErrUserNotFound {
+			helper.WriteError(w, http.StatusBadRequest, "User not Found")
+		}
+	}
+
+	hashedToken := security.GenerateSecureToken()
+	resetTokenResponse, err := h.service.userRepo.SavePasswordResetToken(r.Context(), user.ID, hashedToken)
+	if err != nil {
+		helper.WriteError(w, http.StatusBadRequest, "Something went wrong")
+	}
+	helper.WriteJSON(w, http.StatusOK, &resetTokenResponse)
 }
 
 //TODO Reset Password

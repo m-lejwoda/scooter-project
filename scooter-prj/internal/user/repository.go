@@ -8,7 +8,9 @@ import (
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*User, error)
 	GetByUsername(ctx context.Context, username string) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
 	Save(ctx context.Context, user *UserRegister) (*User, error)
+	SavePasswordResetToken(ctx context.Context, userId int, tokenHash string) (*PasswordResetTokenResponse, error)
 }
 
 type TokenRepository interface {

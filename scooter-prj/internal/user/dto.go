@@ -33,3 +33,15 @@ type TokensTTL struct {
 	AccessTTL  time.Duration
 	RefreshTTL time.Duration
 }
+
+type UserEmail struct {
+	Email string
+}
+
+type PasswordResetTokenResponse struct {
+	ID        int
+	UserId    int
+	TokenHash string
+	ExpiredAt time.Time
+	CreatedAt time.Time
+}
