@@ -84,6 +84,12 @@ func (u *UserStorage) Save(ctx context.Context, user *UserRegister) (*User, erro
 	return &createdUser, nil
 }
 
+func (u *UserStorage) GetPasswordToken(ctx context.Context, user_id int) (*PasswordResetTokenResponse, error) {
+	query := `SELECT id, user_id, tokenHash, expired_at, created_at FROM password_reset_tokens WHERE expired_at < NOW();`
+	var resetToken PasswordResetTokenResponse
+	err := row.Scan(&resetToken.ID, &resetToken.UserId, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
+}
+
 func (u *UserStorage) SavePasswordResetToken(ctx context.Context, userId int, tokenHash string) (*PasswordResetTokenResponse, error) {
 	query := `INSERT INTO password_reset_tokens (user_id, token_hash, expired_at, created_at)
 									VALUES ($1, $2, $3, $4, NOW())

@@ -113,7 +113,6 @@ func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	token := r.PathValue("token")
 	if token == "" {
 		helper.WriteError(w, http.StatusBadRequest, "No token")
-		// TODO DO REST
 	}
 }
 
