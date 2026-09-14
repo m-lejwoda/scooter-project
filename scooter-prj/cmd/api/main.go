@@ -9,6 +9,7 @@ import (
 
 	"scooter-prj/internal/config"
 	"scooter-prj/internal/database"
+	"scooter-prj/internal/email"
 	"scooter-prj/internal/user"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -43,13 +44,15 @@ func main() {
 			fmt.Println(err)
 		}
 	})
+	mailer := email.NewSMTPMailer(cfg.MailPitURL)
+
 	jwtManager := user.NewJWTManager(user.TokensTTL{
 		AccessTTL:  time.Hour * 24,
 		RefreshTTL: time.Hour * 24 * 30,
 	})
 	storage := user.NewUserStorage(db)
 	tokenStorage := user.NewUserTokenStorage(rdb)
-	userService := user.NewUserService(storage, tokenStorage, jwtManager)
+	userService := user.NewUserService(storage, tokenStorage, jwtManager, mailer)
 	userHandler := user.NewUserHandler(userService)
 
 	mux := http.NewServeMux()

@@ -2,9 +2,13 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
+
+	"scooter-prj/internal/email"
+	"scooter-prj/internal/security"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -13,10 +17,11 @@ type UserService struct {
 	userRepo   UserRepository
 	tokenRepo  TokenRepository
 	jwtManager *JWTManager
+	mailer     email.Mailer
 }
 
-func NewUserService(userRepo UserRepository, tokenRepo TokenRepository, jwtManager *JWTManager) *UserService {
-	return &UserService{userRepo: userRepo, tokenRepo: tokenRepo, jwtManager: jwtManager}
+func NewUserService(userRepo UserRepository, tokenRepo TokenRepository, jwtManager *JWTManager, mailer email.Mailer) *UserService {
+	return &UserService{userRepo: userRepo, tokenRepo: tokenRepo, jwtManager: jwtManager, mailer: mailer}
 }
 
 func (u *UserService) Login(ctx context.Context, user UserLogin) (*UserResponse, error) {
@@ -65,6 +70,30 @@ func (u *UserService) generateUserResponse(ctx context.Context, userID int, user
 	}, nil
 }
 
+func (s *UserService) RequestPasswordReset(ctx context.Context, email string) error {
+	user, err := s.userRepo.GetByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, ErrUserNotFound) {
+			return nil
+		}
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	rawToken, hashedToken := security.GenerateSecureToken()
+
+	_, err = s.userRepo.SavePasswordResetToken(ctx, user.ID, hashedToken)
+	if err != nil {
+		return fmt.Errorf("failed to save reset token: %w", err)
+	}
+
+	err = s.mailer.SendResetPassword(user.Email, rawToken)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	return nil
+}
+
+// TODO Move somewhere ort delete because seomthing similar already exists
 func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	key := []byte(os.Getenv("JWT_SECRET_KEY"))
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

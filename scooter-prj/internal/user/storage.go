@@ -84,18 +84,24 @@ func (u *UserStorage) Save(ctx context.Context, user *UserRegister) (*User, erro
 	return &createdUser, nil
 }
 
-func (u *UserStorage) GetPasswordToken(ctx context.Context, user_id int) (*PasswordResetTokenResponse, error) {
-	query := `SELECT id, user_id, tokenHash, expired_at, created_at FROM password_reset_tokens WHERE expired_at < NOW();`
+func (u *UserStorage) GetPasswordTokenByUserID(ctx context.Context, userID int) (*PasswordResetTokenResponse, error) {
+	query := `SELECT id, user_id, tokenHash, expired_at, created_at FROM password_reset_tokens WHERE user_id = $1 AND expired_at < NOW();`
 	var resetToken PasswordResetTokenResponse
+	row := u.db.Pool.QueryRow(ctx, query, userID)
 	err := row.Scan(&resetToken.ID, &resetToken.UserId, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
+	if err != nil {
+		fmt.Println("Error")
+		return nil, err
+	}
+	return &resetToken, nil
 }
 
-func (u *UserStorage) SavePasswordResetToken(ctx context.Context, userId int, tokenHash string) (*PasswordResetTokenResponse, error) {
+func (u *UserStorage) SavePasswordResetToken(ctx context.Context, userID int, tokenHash string) (*PasswordResetTokenResponse, error) {
 	query := `INSERT INTO password_reset_tokens (user_id, token_hash, expired_at, created_at)
 									VALUES ($1, $2, $3, $4, NOW())
 									RETURNING id, user_id, token_hash, expired_at, created_at`
 	expiredAt := time.Now().Add(time.Minute * 30)
-	row := u.db.Pool.QueryRow(ctx, query, userId, tokenHash, expiredAt)
+	row := u.db.Pool.QueryRow(ctx, query, userID, tokenHash, expiredAt)
 	var resetToken PasswordResetTokenResponse
 	err := row.Scan(&resetToken.ID, &resetToken.UserId, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
 	if err != nil {

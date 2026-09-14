@@ -6,12 +6,12 @@ import (
 	"encoding/hex"
 )
 
-func GenerateSecureToken() string {
+func GenerateSecureToken() (string, string) {
 	b := make([]byte, 32)
 	rand.Read(b)
 	rawToken := hex.EncodeToString(b)
 	hashedToken := HashToken(rawToken)
-	return hashedToken
+	return rawToken, hashedToken
 }
 
 func HashToken(rawToken string) string {

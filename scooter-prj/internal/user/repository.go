@@ -10,7 +10,8 @@ type UserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	Save(ctx context.Context, user *UserRegister) (*User, error)
-	SavePasswordResetToken(ctx context.Context, userId int, tokenHash string) (*PasswordResetTokenResponse, error)
+	GetPasswordTokenByUserID(ctx context.Context, userID int) (*PasswordResetTokenResponse, error)
+	SavePasswordResetToken(ctx context.Context, userID int, tokenHash string) (*PasswordResetTokenResponse, error)
 }
 
 type TokenRepository interface {

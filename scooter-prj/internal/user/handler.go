@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"scooter-prj/internal/helper"
-	"scooter-prj/internal/security"
 )
 
 type UserHandler struct {
@@ -90,22 +89,23 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) RequestPasswordReset(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("RequestPasswordReset")
-	u, _ := helper.ReadJSON[UserEmail](w, r)
-	user, err := h.service.userRepo.GetByEmail(r.Context(), u.Email)
+	u, err := helper.ReadJSON[UserEmail](w, r)
 	if err != nil {
-		fmt.Println("Error")
-		if err == ErrUserNotFound {
-			helper.WriteError(w, http.StatusBadRequest, "User not Found")
-		}
+		helper.WriteError(w, http.StatusBadRequest, "Invalid request payload")
+		return // Pamiętaj o return!
 	}
 
-	hashedToken := security.GenerateSecureToken()
-	resetTokenResponse, err := h.service.userRepo.SavePasswordResetToken(r.Context(), user.ID, hashedToken)
+	err = h.service.RequestPasswordReset(r.Context(), u.Email)
 	if err != nil {
-		helper.WriteError(w, http.StatusBadRequest, "Something went wrong")
+		fmt.Printf("Password reset error: %v\n", err)
+
+		helper.WriteError(w, http.StatusInternalServerError, "Something went wrong")
+		return
 	}
-	helper.WriteJSON(w, http.StatusOK, &resetTokenResponse)
+
+	helper.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "If an account with that email exists, we sent a password reset link.",
+	})
 }
 
 func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
