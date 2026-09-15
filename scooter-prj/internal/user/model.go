@@ -8,6 +8,7 @@ type User struct {
 	Lastname  string    `db:"lastname" json:"lastname"`
 	Password  string    `db:"password" json:"password"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	Email     string    `db:"email" json:"email"`
 }
 
 type PasswordResetToken struct {

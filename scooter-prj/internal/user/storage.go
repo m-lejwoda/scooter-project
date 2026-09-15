@@ -88,7 +88,7 @@ func (u *UserStorage) GetPasswordTokenByUserID(ctx context.Context, userID int) 
 	query := `SELECT id, user_id, tokenHash, expired_at, created_at FROM password_reset_tokens WHERE user_id = $1 AND expired_at < NOW();`
 	var resetToken PasswordResetTokenResponse
 	row := u.db.Pool.QueryRow(ctx, query, userID)
-	err := row.Scan(&resetToken.ID, &resetToken.UserId, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
+	err := row.Scan(&resetToken.ID, &resetToken.UserID, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
 	if err != nil {
 		fmt.Println("Error")
 		return nil, err
@@ -103,7 +103,7 @@ func (u *UserStorage) SavePasswordResetToken(ctx context.Context, userID int, to
 	expiredAt := time.Now().Add(time.Minute * 30)
 	row := u.db.Pool.QueryRow(ctx, query, userID, tokenHash, expiredAt)
 	var resetToken PasswordResetTokenResponse
-	err := row.Scan(&resetToken.ID, &resetToken.UserId, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
+	err := row.Scan(&resetToken.ID, &resetToken.UserID, &resetToken.TokenHash, &resetToken.ExpiredAt, &resetToken.CreatedAt)
 	if err != nil {
 		fmt.Println("Error")
 		return nil, err

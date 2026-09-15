@@ -40,7 +40,7 @@ type UserEmail struct {
 
 type PasswordResetTokenResponse struct {
 	ID        int
-	UserId    int
+	UserID    int
 	TokenHash string
 	ExpiredAt time.Time
 	CreatedAt time.Time
